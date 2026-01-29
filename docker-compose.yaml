@@ -1,0 +1,43 @@
+services:
+  florian-php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      - florian-mysql
+    environment:
+      DATABASE_HOST: florian-mysql
+      DATABASE_PORT: 3306
+      DATABASE_NAME: quizz_cda
+      DATABASE_USERNAME: cda_user
+      DATABASE_PASSWORD: cda_pass
+    command: php -S 0.0.0.0:8000 -t public
+    networks:
+      - quizznet
+
+  florian-mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: quizz_cda
+      MYSQL_USER: cda_user
+      MYSQL_PASSWORD: cda_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/quizz_cda.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - quizznet
+
+volumes:
+  mysql_data:
+
+networks:
+  quizznet:
+    driver: bridge

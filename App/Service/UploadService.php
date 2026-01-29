@@ -21,36 +21,27 @@ class UploadService
      * @return string Nom de l'image uploadée
      * @throws UploadException
      */
-    public function uploadFile(array $files): string
+    public function uploadFile(?array $files): string
     {
-        //Test si le fichier est bien uplodé
-        if ($this->isFileUploadCorrectly($files)) {
-            throw new UploadException("Pas de fichier à importer");
+        if (!$this->isFileUploadCorrectly($files)) {
+            return "https://www.anigaido.com/media/zoo_animaux/101-200/113/gnou-bleu-gnou-a-queue-noire-connochaetes-taurinus3-page.jpg";
         }
 
-        //test de la taille
-        if ($this->validateUploadSize($files)) {
+        if ($files["size"] > self::UPLOAD_SIZE_MAX) {
             throw new UploadException("La taille du fichier est trop importante");
         }
 
-        //Récupération de l'extension
         $ext = Tools::getFileExtension($files["name"]);
 
-        //Test si le format du fichier est valide
-        if (!$this->validateUploadFormat($ext)) {
-            throw new UploadException("Le format " . $ext . " est invalide");
+        if (!in_array($ext, self::UPLOAD_FORMAT_WHITE_LIST)) {
+            throw new UploadException("Format invalide");
         }
 
-        //rename files
-        $newName =  $this->renameFile($ext);
-        $uploadTmp = $files["tmp_name"];
-        $uploadtarget = self::UPLOAD_DIRECTORY . $newName;
+        $newName = uniqid() . "." . $ext;
+        move_uploaded_file($files["tmp_name"], self::UPLOAD_DIRECTORY . $newName);
 
-        //move to Upload_directory
-        move_uploaded_file($uploadTmp, $uploadtarget);
         return $newName;
     }
-
     /**
      * Méthode pour tester si l'image à bien été uploadée
      * @param array $files (données du fichier)
@@ -90,4 +81,6 @@ class UploadService
     {
         return uniqid() . "." . $ext;
     }
+
+
 }

@@ -33,4 +33,23 @@ class QuizzController extends AbstractController
 
         return $this->render("add_quizz", "Ajouter un quizz", $data);
     }
+
+
+    public function showQuizz(int $id): mixed
+    {
+        $data = [];
+
+        $quizz = $this->quizzService->getQuizz($id);
+
+        if (!$quizz) {
+            $data["msg"] = "Quizz introuvable";
+            return $this->render("show_quizz", "Afficher un quizz", $data);
+        }
+
+        $data["quizz"] = $quizz;
+
+        return $this->render("show_quizz", "Afficher un quizz", $data);
+    }
+
+
 }

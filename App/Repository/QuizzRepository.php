@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Repository\AbstractRepository;
+
 use App\Entity\Entity;
 use App\Entity\Quizz;
+use App\Entity\Media;
 
 class QuizzRepository extends AbstractRepository
 {
@@ -15,7 +17,52 @@ class QuizzRepository extends AbstractRepository
      */
     public function find(int $id): ?Quizz
     {
-        return null;
+        try {
+            $sql = "SELECT q.id, q.title, q.description, m.id AS media_id, m.url, m.alt, c.id AS category_id, c.name
+                FROM quizz q
+                LEFT JOIN media m ON m.id = q.media_id
+                LEFT JOIN quizz_category qc ON qc.quizz_id = q.id
+                LEFT JOIN category c ON c.id = qc.category_id
+                WHERE q.id = ?
+            ";
+
+
+            $req = $this->connect->prepare($sql);
+            $req->execute([$id]);
+
+            $rows = $req->fetchAll(\PDO::FETCH_ASSOC);
+            if (!$rows) {
+                return null;
+            }
+
+            $quizz = new Quizz();
+            $quizz->setId((int)$rows[0]["id"]);
+            $quizz->setTitle($rows[0]["title"]);
+            $quizz->setDescription($rows[0]["description"]);
+
+            if (!empty($rows[0]["m_id"])) {
+                $media = new Media();
+                $media->setId((int)$rows[0]["m_id"]);
+                $media->setUrl($rows[0]["m_url"]);
+                $media->setAlt($rows[0]["m_alt"]);
+                $media->setMedia($m);
+            }
+
+            foreach ($rows as $row) {
+                if (!empty($row["c_id"])) {
+                    $category = new Category();
+                    $category->setId((int)$row["c_id"]);
+                    $category->setName($row["c_name"]);
+                    $category->addCategory($c);
+                }
+            }
+
+            return $q;
+
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+            return null;
+        }
     }
 
     /**
