@@ -67,6 +67,7 @@ $router->map(Route::controller('GET', '/upload', App\Controller\HomeController::
 $router->map(Route::controller('POST', '/upload', App\Controller\HomeController::class, 'testUpload'));
 $router->map(Route::controller('GET', '/quizz/id/{id}', App\Controller\QuizzController::class, 'showQuizz'));
 $router->map(Route::controller('GET', '/me', App\Controller\ProfileController::class, 'profile'));
+$router->map(Route::controller('GET', '/api/categories', App\Controller\Api\CategoryController::class, 'categories'));
 
 try  {
     $router->dispatch();
